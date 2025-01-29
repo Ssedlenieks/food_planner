@@ -224,7 +224,7 @@ export default {
 }
 
 .modal-content h3 {
-  margin-bottom: 10px;
+  margin-bottom: 10px
 }
 
 .modal-content p {

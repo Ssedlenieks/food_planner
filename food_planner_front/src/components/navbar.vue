@@ -53,6 +53,7 @@ ul {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  z-index: 1000; /* Add a higher z-index */
 }
 
 li {
