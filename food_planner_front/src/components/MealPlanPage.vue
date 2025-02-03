@@ -33,7 +33,7 @@
     <div :class="['modal', { show: isModalOpen }]">
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
-        <h3>Details for {{ selectedDay.date }}</h3>
+        <h2>{{ selectedDay.date }}</h2>
         <p>{{ selectedDay.details }}</p>
       </div>
     </div>
@@ -44,58 +44,59 @@
 import NavBar from "@/components/navbar.vue";
 
 export default {
-  name: "Calendar",
-  data() {
-    return {
-      currentDate: new Date(),
-      weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      isModalOpen: false, // Modal state
-      selectedDay: {}, // Selected day details
-    };
-  },
+  name: "MealPlanPage",
   components: {
     NavBar,
   },
-  computed: {
-    currentYear() {
-      return this.currentDate.getFullYear();
-    },
-    currentMonth() {
-      return this.currentDate.toLocaleString("default", { month: "long" });
-    },
-    daysInMonth() {
-      const year = this.currentDate.getFullYear();
-      const month = this.currentDate.getMonth();
-      const totalDays = new Date(year, month + 1, 0).getDate();
-
-      // Create an array of day objects
+  data() {
+    return {
+      currentMonth: new Date().toLocaleString('default', { month: 'long' }),
+      currentYear: new Date().getFullYear(),
+      weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      daysInMonth: this.getDaysInMonth(new Date().getFullYear(), new Date().getMonth()),
+      isModalOpen: false,
+      selectedDay: {},
+    };
+  },
+  methods: {
+    getDaysInMonth(year, month) {
+      const date = new Date(year, month, 1);
       const days = [];
-      for (let date = 1; date <= totalDays; date++) {
-        const current = new Date(year, month, date);
-        days.push({
-          date,
-          isToday: current.toDateString() === this.currentDate.toDateString(),
-          details: `Sample details for ${current.toDateString()}`, // Example data
-        });
+      while (date.getMonth() === month) {
+        const day = {
+          date: date.getDate(),
+          isToday: date.toDateString() === new Date().toDateString(),
+          details: `Sample details for ${date.toDateString()}`, // Example data
+        };
+        days.push(day);
+        date.setDate(date.getDate() + 1);
+      }
+      // Adjust the start of the week to Monday
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const leadingDays = (firstDayIndex === 0 ? 6 : firstDayIndex - 1);
+      for (let i = 0; i < leadingDays; i++) {
+        days.unshift({ date: '', isToday: false, details: '' });
       }
       return days;
     },
-  },
-  methods: {
-    openModal(day) {
-      this.selectedDay = day; // Set the selected day details
-      this.isModalOpen = true; // Open modal
-    },
-    closeModal() {
-      this.isModalOpen = false; // Close modal
-    },
     goToPreviousMonth() {
-      this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-      this.currentDate = new Date(this.currentDate); // Trigger reactivity
+      const date = new Date(this.currentYear, new Date().getMonth() - 1, 1);
+      this.currentMonth = date.toLocaleString('default', { month: 'long' });
+      this.currentYear = date.getFullYear();
+      this.daysInMonth = this.getDaysInMonth(date.getFullYear(), date.getMonth());
     },
     goToNextMonth() {
-      this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-      this.currentDate = new Date(this.currentDate); // Trigger reactivity
+      const date = new Date(this.currentYear, new Date().getMonth() + 1, 1);
+      this.currentMonth = date.toLocaleString('default', { month: 'long' });
+      this.currentYear = date.getFullYear();
+      this.daysInMonth = this.getDaysInMonth(date.getFullYear(), date.getMonth());
+    },
+    openModal(day) {
+      this.selectedDay = day;
+      this.isModalOpen = true;
+    },
+    closeModal() {
+      this.isModalOpen = false;
     },
   },
 };
@@ -104,14 +105,9 @@ export default {
 <style scoped>
 /* Calendar container */
 .calendar {
-  max-width: 400px;
-  margin: 20px auto;
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 0 auto;
   text-align: center;
-  font-family: Arial, sans-serif;
 }
 
 /* Calendar header */
@@ -153,91 +149,50 @@ export default {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  gap: 10px;
 }
 
 /* Days */
 .day {
-  padding: 10px 0;
+  padding: 10px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #f9f9f9;
-  color: #333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.day:hover {
-  background: #007bff;
-  color: #fff;
-  transform: scale(1.05);
-}
-
-.day:active {
-  transform: scale(0.95);
 }
 
 .day.today {
-  background: #007bff;
-  color: #fff;
-  font-weight: bold;
+  background-color: #007bff;
+  color: white;
 }
 
 /* Modal styles */
 .modal {
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  display: flex;
   justify-content: center;
   align-items: center;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-  z-index: 1000;
 }
 
 .modal.show {
-  opacity: 1;
-  visibility: visible;
+  display: flex;
 }
 
 .modal-content {
   background: white;
   padding: 20px;
-  border-radius: 12px;
-  width: 300px;
-  text-align: center;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  transform: scale(0.8);
-  transition: transform 0.3s ease;
-}
-
-.modal.show .modal-content {
-  transform: scale(1);
-}
-
-.modal-content h3 {
-  margin-bottom: 10px
-}
-
-.modal-content p {
-  font-size: 14px;
-  color: #555;
+  border-radius: 8px;
+  position: relative;
 }
 
 .close {
   position: absolute;
   top: 10px;
-  right: 20px;
-  font-size: 24px;
+  right: 10px;
   cursor: pointer;
-  color: #333;
 }
 </style>
