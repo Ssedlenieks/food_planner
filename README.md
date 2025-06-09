@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
@@ -59,3 +60,27 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+=======
+## Projekta mērķis
+Šī projekta mērķis ir izveidot recepšu un ēdienreižu plānošanas platformu, kas palīdz lietotājiem organizēt savu uzturu un atvieglot ēdiena gatavošanas procesu. Pašlaik visas receptes ir dažādās mājaslapās, un kalorijas lielākoties jāskaita vai nu pašam, vai arī jāizmanto kāds atsevišķs rīks; turklāt plānošana arī lielākoties ir atsevišķa. Šie visi faktori apgrūtina un atgrūž daudzus mainīt vai uzlabot savu uzturu. Sistēmā tiks glabāta informācija par lietotāja reģistrāciju, receptēm, produktiem un kaloriju skaitu nosacītam produktam. 
+
+## Galvenās funkcijas
+
+
+Recepšu meklēšana  
+
+Recepšu saglabāšana 
+
+Ēdienreižu plānošana 
+
+Kaloriju skaitītājs 
+
+Ieteikumi, balstoties uz sastāvdaļām 
+
+Diētu veidošana 
+
+Iepirkumu saraksta veidotājs 
+
+## Jau izveidots :
+Daļēji homepage, homepage navbar, iecienītāko recepšu page, šajā commitā vēl iespēja apskatīt veco kalendāra modeli, dark mode iespēja, reģistrēšanas logs, bez funkcionalitātes, iespēja meklēt receptes tikai favourite recipe page.
+>>>>>>> d48f42627f77c3273f4a1aa26a0da693fa90de2a
