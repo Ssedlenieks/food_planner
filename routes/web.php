@@ -8,11 +8,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MealPlanController;
+use App\Http\Controllers\AdminController;
 
 // --------------------
 // Auth (Sanctum)
 // --------------------
-// Public auth routes (no authentication required)
 Route::middleware('web')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -34,7 +34,7 @@ Route::get('/public-meals/{id}', [MealController::class, 'showPublic']);
 // Authenticated Routes
 // --------------------
 Route::middleware(['auth:sanctum', 'web'])->group(function () {
-    // Logout (must be protected)
+    // Logout
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Profile
@@ -72,6 +72,24 @@ Route::middleware(['auth:sanctum', 'web'])->group(function () {
     Route::get('/meal-plans', [MealPlanController::class, 'index']);
     Route::post('/meal-plans', [MealPlanController::class, 'store']);
     Route::delete('/meal-plans/{mealPlan}', [MealPlanController::class, 'destroy']);
+
+    // Test route for middleware debugging
+    Route::get('/test-admin', function() {
+        return response()->json(['message' => 'Admin middleware works!']);
+    })->middleware('is_admin');
+});
+
+// --------------------
+// Admin Routes (Only for Admins) - NEW IMPLEMENTATION
+// --------------------
+Route::middleware(['auth:sanctum', 'web', 'is_admin'])->prefix('admin')->group(function () {
+    // Manage users
+    Route::get('/users', [AuthController::class, 'getAllUsers'])->name('admin.users.index');
+    Route::delete('/users/{id}', [AuthController::class, 'deleteUser'])->name('admin.users.delete');
+
+    // Manage recipes
+    Route::get('/recipes', [MealController::class, 'getAllRecipes'])->name('admin.recipes.index');
+    Route::delete('/recipes/{id}', [MealController::class, 'adminDeleteRecipe'])->name('admin.recipes.delete');
 });
 
 // --------------------

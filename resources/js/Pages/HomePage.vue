@@ -3,10 +3,10 @@
         <NavBar @scroll-to-section="scrollToSection" />
 
         <!-- Login Status -->
-        <div v-if="user">
+        <div class="status-msg" v-if="user">
             <p>Welcome, {{ user.name }}!</p>
         </div>
-        <div v-else>
+        <div class="status-msg" v-else>
             <p>You are not logged in. Please log in to continue.</p>
         </div>
 
@@ -16,11 +16,11 @@
                 <div class="hero-text">
                     <p>#1 receptes tikai šeit</p>
                     <h2>
-                        seko lidzi food <br />
+                        seko līdzi food <br />
                         <span class="highlight"> i mean it </span>
                     </h2>
-                    <p>progrese w that food veido savu dietu </p>
-                    <button class="start-btn">
+                    <p>Progresē ar savu diētu — veido savu ēdienkarti.</p>
+                    <button class="start-btn" @click="scrollToSection('categories-section')">
                         START TODAY <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -28,11 +28,12 @@
         </section>
 
         <!-- Category List Section -->
-        <section class="categories-section" v-if="categories.length > 0">
+        <section id="categories-section" class="categories-section" v-if="categories.length">
             <div class="category-header" @click="toggleCategories">
                 <h2 class="categories-title">Categories</h2>
                 <i class="fas fa-chevron-down" :class="{ 'rotate-180': !showCategories }"></i>
             </div>
+
             <transition name="fade">
                 <ul v-show="showCategories" class="category-list">
                     <li v-for="category in categories" :key="category.id">
@@ -51,7 +52,7 @@
         <section class="featured">
             <h2>Check out our recipes</h2>
 
-            <div v-if="meals.length > 0" class="carousel-wrapper">
+            <div v-if="meals.length" class="carousel-wrapper">
                 <div class="arrow left" @click="scrollLeft">
                     <i class="fa-solid fa-arrow-left"></i>
                 </div>
@@ -60,7 +61,7 @@
                     <div v-for="(meal, index) in meals" :key="index" class="card">
                         <img :src="meal.meal_image" :alt="meal.meal_name || 'Recipe Image'" />
                         <div class="card-info">
-                            <h3>{{ meal.meal_name || 'Untitled Recipe' }}</h3>
+                            <h3>{{ meal.meal_name }}</h3>
                             <p>{{ mealDescriptionPreview(meal.meal_description) }}</p>
                             <div class="card-actions">
                                 <button @click="viewRecipe(meal.id)">View Recipe</button>
@@ -85,7 +86,7 @@
         <!-- Meal Plan Section -->
         <section class="meal-plan">
             <h2>Your Meal Plan</h2>
-            <div v-if="meals.length > 0" class="meal-plan-grid">
+            <div v-if="meals.length" class="meal-plan-grid">
                 <MealCalendar />
             </div>
         </section>
@@ -97,72 +98,47 @@ import NavBar from "@/Components/NavBar.vue";
 import axios from "axios";
 import MealCalendar from "@/Components/MealCalendar.vue";
 
-
 export default {
     name: "HomePage",
-    components: {
-        NavBar,
-        MealCalendar
-    },
+    components: { NavBar, MealCalendar },
     data() {
         return {
             meals: [],
             categories: [],
             user: null,
-            isLoading: false,
-            error: null,
             showCategories: true,
+            error: null,
         };
     },
     methods: {
-        async fetchMeals() {
-            this.isLoading = true;
-            this.error = null;
-
+        async fetchData() {
             try {
                 await axios.get('/sanctum/csrf-cookie');
-                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/public-meals`);
-                this.meals = Array.isArray(response.data) ? response.data.map(meal => ({
+
+                const [mealsRes, categoriesRes, userRes] = await Promise.all([
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/public-meals`),
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/categories`),
+                    axios.get("/api/user")
+                ]);
+
+                this.meals = mealsRes.data.map(meal => ({
                     id: meal.id,
                     meal_name: meal.meal_name || 'No name',
                     meal_description: meal.meal_description || 'No description',
                     meal_image: meal.meal_image || 'https://via.placeholder.com/300',
-                })) : [];
-            } catch (error) {
-                console.error("Error fetching meals:", error);
-                this.error = "Failed to load recipes.";
-            } finally {
-                this.isLoading = false;
-            }
-        },
+                }));
 
-        async fetchCategories() {
-            try {
-                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/categories`);
-                this.categories = response.data || [];
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-                this.categories = [];
-            }
-        },
+                this.categories = categoriesRes.data || [];
+                this.user = userRes.data || null;
 
-        async fetchUser() {
-            try {
-                const response = await axios.get('/api/user');
-                this.user = response.data || null;
-            } catch {
-                this.user = null;
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                this.error = "Failed to load data.";
             }
         },
 
         toggleCategories() {
             this.showCategories = !this.showCategories;
-        },
-
-        mealDescriptionPreview(description) {
-            return description && description.length > 100
-                ? `${description.substring(0, 100)}...`
-                : description || 'No description available';
         },
 
         viewRecipe(mealId) {
@@ -172,7 +148,7 @@ export default {
         scrollToSection(sectionId) {
             const section = document.getElementById(sectionId);
             if (section) {
-                window.scrollTo({ top: section.offsetTop - 70, behavior: "smooth" });
+                section.scrollIntoView({ behavior: "smooth" });
             }
         },
 
@@ -184,24 +160,29 @@ export default {
         scrollRight() {
             const carousel = this.$refs.carousel;
             if (carousel) carousel.scrollBy({ left: carousel.clientWidth, behavior: "smooth" });
+        },
+
+        mealDescriptionPreview(description) {
+            return description?.length > 100
+                ? `${description.slice(0, 100)}...`
+                : description || 'No description available';
         }
     },
+
     mounted() {
-        this.fetchMeals();
-        this.fetchCategories();
-        this.fetchUser();
+        this.fetchData();
     }
 };
 </script>
 
-
-
 <style scoped>
-/* Login Status */
-p {
+/* Global */
+.status-msg {
+    text-align: center;
     font-size: 18px;
     margin: 20px 0;
-    color: #333;
+    color: #1e3a8a;
+    font-weight: 500;
 }
 
 /* Hero Section */
@@ -209,31 +190,33 @@ p {
     background: linear-gradient(to right, #3b82f6, #1e40af);
     color: white;
     text-align: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
 }
 .hero-content {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: auto;
 }
 .hero-text p {
-    font-size: 14px;
-    margin-bottom: 10px;
+    font-size: 16px;
+    margin-bottom: 12px;
 }
 .hero-text h2 {
-    font-size: 36px;
+    font-size: 40px;
     font-weight: bold;
     margin-bottom: 20px;
+    line-height: 1.2;
 }
-.hero-text .highlight {
-    background-color: white;
-    color: #1e40af;
-    padding: 0 6px;
+.highlight {
+    background-color: #ffffff;
+    color: #1e3a8a;
+    padding: 0 8px;
+    border-radius: 4px;
 }
 .start-btn {
-    background-color: white;
-    color: #1e40af;
+    background: #ffffff;
+    color: #1e3a8a;
     font-weight: bold;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 999px;
     border: none;
     cursor: pointer;
@@ -241,8 +224,8 @@ p {
     transition: all 0.3s ease;
 }
 .start-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 .start-btn i {
     margin-left: 8px;
@@ -250,73 +233,62 @@ p {
 
 /* Categories Section */
 .categories-section {
+    background-color: #f9fafb;
+    padding: 2.5rem 1rem;
+    border-top: 2px solid #e5e7eb;
+    border-bottom: 2px solid #e5e7eb;
     text-align: center;
-    padding: 2rem;
-    background-color: #f7f7f7;
-    border-top: 2px solid #ddd;
-    border-bottom: 2px solid #ddd;
 }
-
 .category-header {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    margin-bottom: 1rem;
+    transition: 0.3s ease;
 }
-
 .category-header:hover {
-    opacity: 0.8;
+    opacity: 0.85;
 }
-
 .categories-title {
     font-size: 2rem;
-    margin: 0;
-    color: #333;
-    transition: all 0.3s ease;
+    font-weight: 600;
+    color: #1e3a8a;
 }
-
 .fa-chevron-down {
-    transition: transform 0.3s ease;
     color: #1e40af;
+    transition: transform 0.3s ease;
 }
-
 .rotate-180 {
     transform: rotate(180deg);
 }
-
 .category-list {
     list-style: none;
     padding: 0;
-    margin: 0 auto;
+    margin-top: 1rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 1rem;
 }
-
 .category-link {
-    display: inline-block;
-    padding: 0.75rem 1.25rem;
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background: #fff;
+    border: 2px solid #e5e7eb;
     border-radius: 30px;
-    color: #333;
+    padding: 0.75rem 1.5rem;
+    color: #1f2937;
     text-decoration: none;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    transition: 0.3s ease;
 }
-
 .category-link:hover {
-    background-color: #4caf50;
-    color: #fff;
+    background: #4caf50;
+    color: white;
     border-color: #4caf50;
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
-/* Transition */
+/* Fade Animation */
 .fade-enter-active, .fade-leave-active {
     transition: opacity 0.3s ease;
 }
@@ -324,24 +296,29 @@ p {
     opacity: 0;
 }
 
-/* Featured Section */
+/* Featured Recipes */
 .featured {
-    padding: 50px 20px;
+    padding: 60px 20px;
+    background: #ffffff;
     text-align: center;
-    background: #f9fafb;
+}
+.featured h2 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 20px;
 }
 .carousel-wrapper {
     position: relative;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: auto;
 }
 .carousel {
     display: flex;
     overflow-x: auto;
     scroll-behavior: smooth;
-    gap: 20px;
+    gap: 24px;
     padding: 20px 0;
-    scrollbar-width: none;
 }
 .carousel::-webkit-scrollbar {
     display: none;
@@ -350,9 +327,9 @@ p {
     flex: 0 0 auto;
     width: 280px;
     background: white;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease;
 }
 .card:hover {
@@ -364,32 +341,32 @@ p {
     object-fit: cover;
 }
 .card-info {
-    padding: 15px;
+    padding: 16px;
 }
 .card-info h3 {
-    margin: 0 0 8px;
     font-size: 18px;
-    color: #333;
+    font-weight: 600;
+    color: #1f2937;
 }
 .card-info p {
-    margin: 0 0 12px;
     font-size: 14px;
-    color: #555;
+    color: #4b5563;
     min-height: 42px;
+    margin-top: 8px;
 }
 .card-actions {
-    display: flex;
-    justify-content: flex-end;
+    text-align: right;
+    margin-top: 10px;
 }
 .card-actions button {
     background: #3b82f6;
     border: none;
     color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 8px;
     font-weight: 600;
-    transition: background 0.3s ease;
+    cursor: pointer;
+    transition: 0.3s ease;
 }
 .card-actions button:hover {
     background: #2563eb;
@@ -400,78 +377,57 @@ p {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: #3b82f6;
-    color: white;
-    width: 36px;
-    height: 36px;
+    background: white;
+    border: 2px solid #e5e7eb;
     border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    padding: 10px;
     cursor: pointer;
     z-index: 10;
-    user-select: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: 0.2s ease;
+}
+.arrow:hover {
+    background: #e0e7ff;
 }
 .arrow.left {
-    left: -20px;
+    left: -25px;
 }
 .arrow.right {
-    right: -20px;
-}
-.arrow i {
-    font-size: 18px;
+    right: -25px;
 }
 
-/* No recipes / Refresh */
+/* No Recipes */
 .no-recipes {
-    text-align: center;
-    margin-top: 20px;
-    color: #666;
+    padding: 40px 0;
 }
 .refresh-btn {
-    margin-top: 10px;
-    background: #3b82f6;
+    background: #10b981;
     color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
+    padding: 10px 20px;
     font-weight: 600;
-    transition: background 0.3s ease;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s ease;
 }
 .refresh-btn:hover {
-    background: #2563eb;
-}
-.refresh-btn i {
-    margin-right: 6px;
+    background: #059669;
 }
 
-/* Meal Plan Section */
+/* Meal Plan */
 .meal-plan {
-    padding: 40px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 50px 20px;
     text-align: center;
+    background-color: #f3f4f6;
 }
 .meal-plan h2 {
-    font-size: 28px;
-    color: #1e40af;
+    font-size: 24px;
+    font-weight: bold;
+    color: #1f2937;
     margin-bottom: 20px;
 }
-
-/* Responsive */
-@media (max-width: 768px) {
-    .card {
-        width: 220px;
-    }
-
-    .hero-text h2 {
-        font-size: 28px;
-    }
-
-    .categories-title {
-        font-size: 20px;
-    }
+.meal-plan-grid {
+    max-width: 1100px;
+    margin: auto;
 }
+
 </style>

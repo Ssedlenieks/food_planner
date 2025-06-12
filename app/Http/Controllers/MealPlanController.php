@@ -14,7 +14,7 @@ class MealPlanController extends Controller
         $userId = Auth::id();
         Log::info('Authenticated User ID: ' . $userId);
 
-        $plans = MealPlan::with('recipe')
+        $plans = MealPlan::with('recipe')//cd
             ->where('user_id', $userId)
             ->get();
 

@@ -72,7 +72,14 @@ const routes = [
         path: '/mealplan',
         name: 'MealPlan',
         component: () => import('../Pages/MealPlan.vue')
+    },
+    {
+        path: '/admin',
+        name: 'AdminPanel',
+        component: () => import('../Pages/AdminPanel.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
     }
+
 
 ];
 

@@ -42,7 +42,6 @@ class MealController extends Controller
         return response()->json($query->get());
     }
 
-
     // Public endpoint: show a specific meal by id with category
     public function showPublic($id)
     {
@@ -74,17 +73,16 @@ class MealController extends Controller
         $meal = Meal::create([
             'meal_name' => $validated['meal_name'],
             'category_id' => $validated['category_id'],
-            'meal_description' => $validated['meal_description'], // ✅ include this!
+            'meal_description' => $validated['meal_description'],
             'ingredients' => $validated['ingredients'],
             'instructions' => $validated['instructions'],
             'meal_image' => $validated['meal_image'] ?? null,
             'meal_source_url' => $validated['meal_source_url'] ?? null,
-            'user_id' => auth()->id(), // assuming you're using auth
+            'user_id' => auth()->id(),
         ]);
 
         return response()->json($meal, 201);
     }
-
 
     // Show one meal owned by logged-in user
     public function show(Meal $recipe)
@@ -133,5 +131,21 @@ class MealController extends Controller
         if ($meal->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
+    }
+
+    //  Admin: Get all meals
+    public function getAllRecipes()
+    {
+        $meals = Meal::with('category', 'user')->get();
+        return response()->json($meals);
+    }
+
+    //  admin: delete any meal
+    public function adminDeleteRecipe($id)
+    {
+        $meal = Meal::findOrFail($id);
+        $meal->delete();
+
+        return response()->json(['message' => 'Recipe deleted successfully']);
     }
 }

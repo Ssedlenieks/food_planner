@@ -34,16 +34,7 @@ export default {
         async loginUser() {
             this.error = null;
 
-            // Regex definitions with comments:
-
-            // Email: basic email pattern, requires '@' and '.'
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            // Password: min 6 characters, at least one digit, and one special character
-            // Explanation:
-            //  (?=.*\d)  -> must contain at least one digit
-            //  (?=.*[\W_]) -> must contain at least one special character (non-word character)
-            //  .{6,} -> minimum length 6
             const passwordRegex = /^(?=.*\d)(?=.*[\W_]).{6,}$/;
 
             if (!emailRegex.test(this.email)) {
@@ -58,7 +49,7 @@ export default {
             this.isLoading = true;
             try {
                 await axios.get('/sanctum/csrf-cookie');
-                // Your login axios post code here...
+
                 const loginResponse = await axios.post('/login', {
                     email: this.email,
                     password: this.password
@@ -66,7 +57,7 @@ export default {
 
                 localStorage.setItem('token', loginResponse.data.token);
 
-                const response = await axios.get('/api/user', {
+                const response = await axios.get('/user', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -75,7 +66,12 @@ export default {
                 localStorage.setItem('authenticated', 'true');
                 localStorage.setItem('user', JSON.stringify(response.data));
 
-                this.$router.push('/profile');
+                // Redirect based on role field
+                if (response.data.role === 'admin') {
+                    this.$router.push('/admin');
+                } else {
+                    this.$router.push('/profile');
+                }
             } catch (error) {
                 this.error = error.response?.data?.message || "Login failed, please try again.";
                 localStorage.removeItem('authenticated');
@@ -85,7 +81,6 @@ export default {
                 this.isLoading = false;
             }
         }
-
     }
 };
 </script>

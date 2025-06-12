@@ -30,7 +30,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import axios from '../axios.js'
+import axios from '../axios.js' // Make sure this axios instance sets Authorization if token exists
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -44,15 +44,9 @@ const error = ref('')
 
 const register = async () => {
     // Regex definitions with comments:
-
-    // Name: 2-15 letters only (uppercase or lowercase)
-    const nameRegex = /^[a-zA-Z]{2,15}$/;
-
-    // Email: basic email pattern, requires '@' and '.'
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    // Password: min 6 characters, at least one digit, and one special character
-    const passwordRegex = /^(?=.*\d)(?=.*[\W_]).{6,}$/;
+    const nameRegex = /^[a-zA-Z]{2,15}$/; // 2-15 letters
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // simple email
+    const passwordRegex = /^(?=.*\d)(?=.*[\W_]).{6,}$/; // min 6 chars, one digit, one special char
 
     // Frontend validation
     if (!nameRegex.test(name.value)) {
@@ -74,12 +68,22 @@ const register = async () => {
 
     try {
         await axios.get('/sanctum/csrf-cookie');
-        await axios.post('/register', {
+
+        const response = await axios.post('/register', {
             name: name.value,
             email: email.value,
             password: password.value,
             password_confirmation: password_confirmation.value
         });
+
+        // Save token and user data
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+
+        // Set token for future requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+
+        // Redirect to home or dashboard
         router.push('/');
     } catch (err) {
         error.value = err.response?.data?.message || 'Error occurred';
