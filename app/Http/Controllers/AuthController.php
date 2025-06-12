@@ -59,4 +59,20 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Logged out successfully']);
     }
+
+    // Admin: Get all users
+    public function getAllUsers()
+    {
+        $users = User::all();
+        return response()->json($users);
+    }
+
+    // Admin: Delete a user by id
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted successfully']);
+    }
 }

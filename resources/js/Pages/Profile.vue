@@ -259,128 +259,137 @@ const logout = async () => {
 </script>
 
 <style scoped>
-/* same styles as before */
 .profile-container {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 20px;
+    max-width: 600px;
+    margin: 60px auto;
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: relative;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .back-button {
     position: absolute;
-    top: 10px;
+    top: 20px;
     left: 20px;
-    background: none;
+    background: #f3f4f6;
     border: none;
-    color: #1e40af;
+    color: #374151;
     font-size: 1rem;
     cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.3s;
 }
 
 .back-button:hover {
-    background-color: #f0f0f0;
+    background-color: #e5e7eb;
 }
 
 .profile-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 25px;
     text-align: center;
+    color: #1f2937;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 10px;
 }
 
 .password-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-size: 22px;
+    font-weight: 500;
+    margin: 20px 0 10px;
+    color: #374151;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #374151;
 }
 
 .form-input {
     width: 100%;
-    padding: 8px;
-    border: 1px solid #aaa;
-    border-radius: 4px;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-input:focus {
+    border-color: #2563eb;
+    outline: none;
+}
+
+.button-blue,
+.button-green,
+.button-red {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
 }
 
 .button-blue {
-    background-color: #007BFF;
+    background-color: #3b82f6;
     color: white;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
 }
 
 .button-blue:hover:not(:disabled) {
-    background-color: #0056b3;
-}
-
-.button-blue:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+    background-color: #2563eb;
 }
 
 .button-green {
-    background-color: #28a745;
+    background-color: #10b981;
     color: white;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
 }
 
 .button-green:hover:not(:disabled) {
-    background-color: #1e7e34;
-}
-
-.button-green:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+    background-color: #059669;
 }
 
 .button-red {
-    background-color: #e53935;
+    background-color: #ef4444;
     color: white;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
 }
 
 .button-red:hover {
-    background-color: #c62828;
+    background-color: #dc2626;
 }
 
 .separator {
-    margin: 30px 0;
+    margin: 40px 0;
     border: none;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #e5e7eb;
 }
 
 .success-message {
-    color: green;
-    font-weight: bold;
+    color: #16a34a;
+    font-weight: 500;
     margin-bottom: 15px;
     text-align: center;
 }
 
 .error-message {
-    color: red;
-    font-weight: bold;
-    font-size: 0.875rem;
-    margin-top: 5px;
+    color: #dc2626;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-top: 6px;
 }
+
 </style>
